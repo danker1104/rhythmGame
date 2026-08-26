@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web Rhythm Game"
+  short_description: "PRD/TRD-driven 4Key rhythm game implementation"
+  default_prompt: "Use $web-rhythm-game to implement the next PRD/TRD milestone safely."
