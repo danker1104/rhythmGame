@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-29T09:59:21.9175405+09:00",
+  "artifact": { "javascript": "dist/assets/index-v6jQyyh1.js", "sha256": "686fd35979f7e5d043ffa8ba4962eaaff7dccf4428c0260cd7d9cbd5c6f48902" },
+  "environment": { "os": "Windows", "difficulty": "Insane", "beatmapId": 847387 },
+  "browsers": {
+    "chrome": { "version": "151.0.7922.174", "gameplayStarted": true, "consoleErrors": 0 },
+    "edge": { "version": "151.0.4129.107", "gameplayStarted": true, "consoleErrors": 0 },
+    "firefox": { "version": "154.0.1", "gameplayStarted": true, "averageFpsAtStart": 59.95, "p95FrameMsAtStart": 16.7, "over33RatioAtStart": 0, "consoleErrors": 0 }
+  },
+  "storyboard": { "productionMinificationRegressionFixed": true, "sampleCountAtStart": 1, "consoleWarningsAfterFix": 0 },
+  "performanceRuns": [
+    { "browser": "Chrome", "version": "151.0.7922.174", "run": 1, "warmupSeconds": 10, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 16.9, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Chrome", "version": "151.0.7922.174", "run": 2, "warmupSeconds": 10, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 17.0, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Chrome", "version": "151.0.7922.174", "run": 3, "warmupSeconds": 10, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 17.0, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Edge", "version": "151.0.4129.107", "run": 1, "warmupSeconds": 10, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 17.0, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Edge", "version": "151.0.4129.107", "run": 2, "warmupSeconds": 10, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 16.9, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Edge", "version": "151.0.4129.107", "run": 3, "warmupSeconds": 10, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 17.0, "over33Ratio": 0, "consoleErrors": 0 }
+  ],
+  "input": { "mouseLeft": 1, "mouseRight": 1, "keyZ": 1, "keyX": 1, "multiChannelRegression": "pass", "surface": "Codex In-app Browser CUA" },
+  "restart": { "count": 10, "musicSourceGenerations": [2,3,4,5,6,7,8,9,10,11], "duplicateGeneration": false },
+  "responsive": { "viewports": ["1920x1080", "1366x768", "1024x768"], "canvasBackingMatchesEffectiveDpr": true, "controlsInsideViewport": true },
+  "layerProbes": { "browser": "Chrome 151.0.7922.174", "foreground": [255,0,0,255], "hitObject": [0,255,0,255], "hud": [0,0,255,255], "cursor": [255,255,255,255] },
+  "storage": { "masterVolumeWritten": 0.42, "masterVolumeNormalizedAndRestored": 0.4 },
+  "automatedRegression": { "testFiles": 50, "tests": 193, "status": "pass" },
+  "rightsGate": { "previewUploadAttempted": false, "status": "pass", "reason": "No upload permitted until redistribution rights are documented." }
+}

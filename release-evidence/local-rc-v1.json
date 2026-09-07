@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-05T09:33:37.412Z",
+  "candidateStatus": "pass",
+  "serverRuntimeRequired": false,
+  "gates": {
+    "A": {
+      "status": "pass",
+      "evidence": "release:verify"
+    },
+    "B": {
+      "status": "pass",
+      "evidence": "release-evidence/browser-smoke-v1.json"
+    }
+  },
+  "automatedChecks": {
+    "tests": {
+      "status": "pass",
+      "evidence": "release:verify"
+    },
+    "productionBundle": "pass",
+    "distValidation": {
+      "status": "pass",
+      "totalBytes": 28386011,
+      "budgetBytes": 36700160,
+      "byRole": {
+        "app": 296958,
+        "catalog": 1578,
+        "report": 31684,
+        "content": 11241569,
+        "skin": 16814222
+      },
+      "fileCount": 265,
+      "artifactSha256": "79325074edd88b628ec9b8338e3ced30c50aaf59f5a5a2200eba7b24c4bec12e"
+    }
+  },
+  "artifact": {
+    "directory": "dist",
+    "entryPoint": "index.html",
+    "previewCommand": "npm run preview"
+  },
+  "deployment": {
+    "attempted": false,
+    "rightsGateRequired": true
+  }
+}

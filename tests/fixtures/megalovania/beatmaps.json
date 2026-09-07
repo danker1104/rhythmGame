@@ -1,0 +1,7 @@
+[
+  { "difficulty": "Easy", "beatmapId": 848233, "hp": 2, "cs": 3, "od": 2, "ar": 3, "sliderMultiplier": 0.6, "timingPoints": 30, "total": 127, "circles": 31, "sliders": 94, "spinners": 2, "firstStartTimeMs": 15984, "lastStartTimeMs": 143984 },
+  { "difficulty": "Normal", "beatmapId": 848235, "hp": 3, "cs": 3.2, "od": 3, "ar": 5, "sliderMultiplier": 0.8, "timingPoints": 30, "total": 190, "circles": 66, "sliders": 121, "spinners": 3, "firstStartTimeMs": 15984, "lastStartTimeMs": 143984 },
+  { "difficulty": "Irre's Light Hard", "beatmapId": 882805, "hp": 5, "cs": 3.3, "od": 5, "ar": 6, "sliderMultiplier": 1.03, "timingPoints": 27, "total": 261, "circles": 98, "sliders": 162, "spinners": 1, "firstStartTimeMs": 7984, "lastStartTimeMs": 143484 },
+  { "difficulty": "Hard", "beatmapId": 848234, "hp": 5.2, "cs": 3.8, "od": 7.2, "ar": 8.3, "sliderMultiplier": 1.3, "timingPoints": 28, "total": 386, "circles": 137, "sliders": 246, "spinners": 3, "firstStartTimeMs": 7984, "lastStartTimeMs": 143984 },
+  { "difficulty": "Insane", "beatmapId": 847387, "hp": 6, "cs": 4, "od": 8.2, "ar": 9, "sliderMultiplier": 1.6, "timingPoints": 31, "total": 465, "circles": 178, "sliders": 284, "spinners": 3, "firstStartTimeMs": 7984, "lastStartTimeMs": 143984 }
+]

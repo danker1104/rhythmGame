@@ -1,70 +1,104 @@
-# AGENTS.md
+# Repository Guidelines
 
-이 저장소는 `The Last Page` 한 곡과 YUGEN 스킨을 사용하는 Vanilla JavaScript 기반 4Key 웹 리듬게임 프로젝트다.
+## Source of Truth
 
-## 작업 시작 순서
+- Read `PRD.md` for product scope and acceptance criteria before changing behavior.
+- Read `TRD.md` for architecture, data contracts, formulas, fixtures, and deployment rules.
+- Read `PRD.md` and `TRD.md` before changing gameplay rendering, HUD layout, cursor feedback, hit-object presentation, input overlay, or result presentation. `play.mp4` is the accepted reference recording; `gameex.md` still describes the superseded `ordr-video.mp4` contract and must be revised before it is used as an implementation authority.
+- Treat the PRD and TRD as authoritative for rules, architecture, and the accepted `play.mp4` presentation observations. Do not let the legacy `gameex.md` override them.
+- Base every implementation on `PRD.md` and `TRD.md`. If a gameplay presentation, layout, animation, feedback, transition, or interaction detail is missing, underspecified, or ambiguous in those documents, you MUST inspect and follow `play.mp4` before deciding or implementing it. Record any newly accepted presentation contract back into PRD/TRD (and later the revised `gameex.md`) instead of relying on memory. This mandatory video fallback does not authorize deriving judgement, ScoreV1, HP, object data, or timing formulas from rendered frames.
+- Keep the MVP limited to osu!standard, the five provided MEGALOVANIA difficulties, and the `- YUGEN -` skin unless the documents are intentionally revised.
+- If a requested change conflicts with either document, surface the conflict instead of silently changing the contract.
 
-1. 루트의 `PRD.md`와 `TRD.md`를 처음부터 끝까지 읽는다.
-2. `.agents/skills/web-rhythm-game/SKILL.md`를 읽고 `$web-rhythm-game` 지침을 적용한다.
-3. 현재 코드, 테스트, `package.json` 스크립트와 작업 트리 상태를 확인한다.
-4. 사용자 요청에 해당하는 가장 작은 PRD/TRD 요구사항만 구현한다.
+## Current State
 
-테스트 우선 구현, 회귀 테스트 또는 red-green-refactor를 요청받으면 `$tdd`도 함께 사용한다. 이때 테스트 seam은 사용자와 합의하고, `web-rhythm-game`의 도메인 불변조건을 유지한다.
+- This repository contains specifications, source content, an application scaffold, tests, generated public content, and prior build output. Inspect the actual scripts and current files before reporting project status.
+- The specifications now target YUGEN v3, but existing source code, tests, generated `public/` content, and prior `dist/` output may still target azer8 v2 until the migration is implemented. Do not describe the runtime migration as complete based on these document changes alone.
+- Do not report build, lint, typecheck, unit-test, browser-check, or smoke-test success until the corresponding scripts or documented manual checks have been implemented and run.
+- Do not add React, Vue, WebGL, Three.js, a server runtime, or Vercel Functions to the MVP.
 
-## 문서 우선순위
+## Required Stack
 
-- 제품 동작과 범위: `PRD.md`
-- 기술 선택, 인터페이스, 공식과 검증값: `TRD.md`
-- 구현 절차와 보호 규칙: `$web-rhythm-game`
-- 테스트 수행 방식: `$tdd`가 호출된 경우 해당 스킬
+- Use Vite, HTML5, CSS3, JavaScript ES2022+, native ES modules, JSDoc, and `// @ts-check`.
+- Use one gameplay Canvas 2D surface. Keep menus, forms, dialogs, and accessibility controls in semantic HTML.
+- Use Web Audio API as the single authoritative clock for music, gameplay, rendering, and storyboard timing. `requestAnimationFrame` is only a render signal.
+- Use `osu-parsers` 4.1.7 and `osu-standard-stable` 5.0.1 with a compatible `osu-classes` peer version. Pin exact versions in the lockfile.
+- Use Vitest for rules, adapters, state transitions, and integration tests.
+- Use the TRD browser checklist and short smoke procedures for Chrome, Edge, Firefox, and Vercel Preview. Do not add a long-running automated browser E2E suite to the MVP.
 
-문서와 실제 자산 또는 코드가 충돌하면 임의로 한쪽을 선택하지 않는다. 발견한 경로·값·동작을 근거로 충돌을 보고하고, 사용자 의도를 바꿀 수 있는 결정은 확인받는다.
+## Architecture Boundaries
 
-## 핵심 기술 제약
+- Keep judgement, ScoreV1, combo, accuracy, HP, and object progression as deterministic pure logic.
+- Modules under `src/rules/` must not import DOM, Canvas, AudioNode, or LocalStorage APIs.
+- Convert parser-library instances to plain application DTOs inside adapters; do not expose parser objects to UI or storage.
+- UI and renderers consume engine events. They must not decide judgement outcomes.
+- `AudioClock` supplies time but does not judge objects. Read map time once per frame and pass the same value through update and render.
+- Resolve song and skin paths through versioned catalogs and manifests. Never hardcode MEGALOVANIA filenames in engine logic.
+- Preserve one-way dependencies described in `TRD.md`; avoid circular imports and shared mutable globals.
 
-- Vanilla JavaScript ES Modules, Vite, HTML/CSS, Canvas 2D와 Web Audio API를 사용한다.
-- React, 게임 엔진 또는 UI 프레임워크는 명시적인 아키텍처 변경 요청 없이 추가하지 않는다.
-- `AudioContext.currentTime`을 게임 플레이의 유일한 시간 기준으로 사용한다.
-- 프레임 delta 누적으로 노트 위치나 판정을 계산하지 않는다.
-- 파서, 오디오, 입력, 판정·점수, 상태, 렌더러, UI, 저장소와 온라인 어댑터를 분리한다.
-- 순수 게임 규칙은 DOM, Canvas, 네트워크와 전역 시계에 의존하지 않게 한다.
-- 온라인 기능이 없어도 전체 싱글 플레이가 동작해야 한다.
+## Original Content
 
-## 콘텐츠와 자산 보호
+- Never modify, rename, delete, or optimize files inside `387700 toby fox - MEGALOVANIA/` or the outer `- YUGEN -/` source directory.
+- Treat `387700 toby fox - MEGALOVANIA/` as the authoritative song source and the files directly inside the outer `- YUGEN -/` directory as the authoritative skin source. Ignore the identical nested `- YUGEN -/- YUGEN -/` copy when inventorying or preparing content. The `azer8 midnight edit/` and older `#azer8midnight v1/` folders are retained reference material, not active skin sources. Do not replace authoritative content with generated demo audio, placeholder maps, a synthetic skin, or unrelated assets.
+- You MUST use the outer `- YUGEN -/` folder as the active skin for all MVP implementation, generated manifests, runtime asset lookup, browser validation, and release evidence. Do not mix in, silently fall back to, or restore assets from azer8 or another skin except for an explicitly documented application fallback when the YUGEN contract permits it. The user shorthand `-YUGEN-` refers to the exact on-disk folder name `- YUGEN -/`.
+- Generate deployable copies under URL-safe `public/content/` and `public/skins/` paths with `scripts/prepare-content.mjs`.
+- Make `scripts/prepare-content.mjs` read from the authoritative song directory and only the direct files in the outer `- YUGEN -/` skin directory. Generate the active skin under `/skins/v3/yugen/`. The web app must load only generated catalog and manifests under `public/`; it must not request the original Windows folder names directly at runtime.
+- Validate that every deployed song, beatmap, storyboard, skin image, and sound resolves back to an allowlisted file from the two source directories. Record source-relative path, byte size, SHA-256, role, MIME type, and audio decode policy in generated manifests.
+- Preserve exact filename case. Normalize map `\` separators to `/`, use the URL API for encoding, and reject absolute paths, drive letters, traversal, and case-only conflicts.
+- Resource precedence is beatmap root, then skin, then application fallback. An exact explicit-silence match stops fallback.
+- Exclude `desktop.ini`, `Thumbs.db`, unused modes/modifiers, and assets outside the validated dependency closure from production output.
 
-- 원본 곡: `1276332 ARForest - The Last Page/`
-- 원본 스킨: `- YUGEN -/`
-- 위 디렉터리의 파일을 명시적 요청 없이 삭제, 이름 변경, 이동, 변환 또는 덮어쓰지 않는다.
-- 배포에는 manifest가 참조하는 파일만 복사한다. 스킨 폴더 전체를 시작 시 로딩하지 않는다.
-- 실제 파일명의 대소문자를 보존해 Windows와 Vercel/Linux에서 동일하게 동작하게 한다.
-- 빈 WAV, zero-frame WAV와 지원하지 않는 WAV는 manifest에서 제외하고 게임을 중단하지 않는다.
-- 공개 배포 전 음악, 비트맵, 배경과 스킨의 재배포 권리를 확인해야 한다.
+## Content Edge Cases
 
-## MVP 경계
+- Parse the active skin's normal `[General]` section directly. Do not carry the older skin's `¬[General]` recovery into the active fixture or implement broad garbage stripping.
+- Apply duplicate INI keys with last-valid-value wins. Do not guess-correct `HitCircleOverlayAboveNumer`.
+- Use `sliderb0.png` as a static single Slider Ball frame. `SliderBallFrames: 60` does not authorize requests for nonexistent `sliderb1..59.png` files.
+- Treat transparent placeholder images as valid assets.
+- Treat documented empty or zero-data WAV files in either the beatmap source or active skin as intentional silence. The active skin's `drum-sliderslide.wav` and `normal-sliderwhistle.wav` are zero-byte explicit-silence files and must stop fallback without reaching `decodeAudioData()`.
+- Do not require nonexistent YUGEN `sliderstartcircle*`, `sliderendcircleoverlay*`, or unnumbered `followpoint.png` assets. Use the documented Standard fallback roles; a present transparent placeholder still stops fallback.
+- Resolve map-local hitsounds and failure assets before skin assets.
+- Merge the selected `.osu` storyboard with the shared `.osb` using the ordering and layer rules in `TRD.md`. A storyboard failure must not stop music or gameplay.
 
-- 곡은 `ARForest — The Last Page` 하나다.
-- 난이도는 Easy, Normal, Hard, Insane 네 개다.
-- 4Key 외 모드, `.osb`, 사용자 곡 업로드와 모바일 입력은 MVP 범위가 아니다.
-- 리더보드와 1대1 대전은 PRD의 후속 단계다. 사용자가 해당 단계를 요청하기 전에는 Supabase 코드나 설정을 추가하지 않는다.
-- 앱은 공식 osu! 호환 구현을 주장하지 않으며 `TRD.md`의 버전된 판정·점수 규칙을 따른다.
+## Gameplay Invariants
 
-## 변경과 검증
+- Use `play.mp4` only as evidence for the presentation contract recorded in `PRD.md` and `TRD.md`; do not use rendered frames to derive judgement, ScoreV1, HP, object data, or authoritative timing formulas. The observed replay score, accuracy, UR, pp, input trace, and map/video offset are presentation evidence, not rule fixtures.
+- Preserve the 1280×720 reference composition: a centered 768×576 Standard playfield at `(256, 72)`, a 960×720 storyboard surface at `(160, 0)`, darkened full-screen background, cyan YUGEN cursor with an intentionally transparent trail, top HUD, right input overlay, lower combo/timing bar, break storyboard, and YUGEN result presentation.
 
-- 기존 구현과 사용자 변경을 먼저 확인하고 관련 없는 파일을 수정하지 않는다.
-- 한 번에 하나의 관찰 가능한 vertical slice를 완성한다.
-- 새 동작에는 해당 public seam의 테스트를 추가하거나 기존 테스트를 갱신한다.
-- 테스트가 없는 초기 저장소에서는 먼저 최소 테스트 기반을 만들되 요청 범위를 넘는 도구를 추가하지 않는다.
-- 관련 단위 테스트를 먼저 실행하고, 통합 영향이 있으면 전체 테스트와 production build를 실행한다.
-- Canvas, 오디오, 키보드 또는 장면 전환 변경은 가능한 경우 실제 브라우저에서도 검증한다.
-- 포맷터나 자동 수정 도구를 실행하기 전 사용자 변경을 덮어쓰지 않는지 확인한다.
+- Keep Standard playfield coordinates at 512×384 and storyboard coordinates at 640×480. At the 1280×720 reference viewport use the documented Standard scale 1.5 with offset `(256, 72)` and storyboard scale 1.5 with offset `(160, 0)`; derive equivalent transforms and the inverse pointer mapping for other viewports without non-uniform scaling.
+- Normalize mouse-left, mouse-right, `KeyZ`, and `KeyX` as independent press/release channels. Any active channel maintains Slider or Spinner hold.
+- Ignore keyboard repeat as a new press. Clear held input and pause on focus loss, hidden documents, interrupted audio, or fullscreen exit during play.
+- Use the documented offset sign: positive offset advances map time relative to decoded audio position.
+- Process every elapsed Miss, Slider part, and scheduled event across dropped frames; never advance gameplay by frame count.
+- Increment `RULESET_VERSION` whenever a rules change would make stored results incomparable.
 
-구현 완료 보고에는 다음을 포함한다.
+## Build and Validation
 
-- 충족한 PRD/TRD 요구사항
-- 변경한 주요 파일
-- 실행한 테스트·빌드·브라우저 흐름과 결과
-- 의도적으로 연기했거나 확인하지 못한 항목
+- Implement the script contract from `TRD.md`: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`, `validate:content`, and `release:verify`.
+- Make `npm run build` delegate to `release:verify`; only the internal `build:bundle` step may invoke `vite build` after all required checks pass.
+- After changing pure behavior, run the narrowest relevant Vitest test first. After changing browser behavior, perform the narrowest applicable TRD browser checklist or smoke procedure.
+- Before local release-candidate completion, run `release:verify` and the documented browser smoke checklist. Run Preview smoke checks only after the rights gate permits a Vercel upload.
+- Do not require Playwright, a `test:e2e` script, or a long-running automated browser E2E suite for MVP completion.
+- Add regression fixtures for exact-case paths, known skin recovery, intentional silence, all five map statistics, storyboard ordering, judgement boundaries, ScoreV1, HP, pause/resume, and multi-channel input.
+- Do not weaken a project regression fixture or change a documented baseline merely to make a test pass. External osu!stable comparison data is optional and does not block implementation or release.
 
-## 외부 작업
+## Installed Skills
 
-사용자가 명시적으로 요청하지 않으면 commit, push, PR 생성, 배포, Supabase 리소스 생성 또는 기타 원격 상태 변경을 수행하지 않는다.
+- Use `game-engine` for Canvas game-loop, rendering, input, and performance guidance.
+- Use `game-audio` for Web Audio lifecycle, gain routing, scheduling, and browser validation; this project's real MP3/WAV playback contract overrides that skill's procedural-audio examples.
+- Use `test-driven-development` for rules, parser adapters, state transitions, and bug fixes.
+
+## Deployment and Rights
+
+- Keep the application functional as a static, serverless Vite build.
+- Keep total production output at or below the 35 MiB budget and emit a per-file and per-role size report.
+- Verify direct asset requests, MIME types, byte ranges, cache behavior, refresh behavior, and audio permission handling on Vercel.
+- Do not publish a public Vercel Production deployment until redistribution rights for audio, beatmaps, backgrounds/storyboards, and the skin are documented. Before approval, use local development or an access-restricted Preview only.
+- Do not describe the project as an official osu! client or imply endorsement.
+
+## Change Discipline
+
+- Make the smallest change that satisfies the current requirement; do not refactor unrelated areas.
+- Preserve user changes and original assets. Never use destructive Git commands.
+- Update `PRD.md` for intentional product-scope changes and `TRD.md` for intentional technical-contract changes.
+- Update `gameex.md` before implementing the accepted `play.mp4` presentation contract; until then, treat its `ordr-video.mp4` observations as superseded wherever they conflict with PRD/TRD.
+- Do not commit, create branches, deploy, or alter source assets unless the user explicitly requests it.

@@ -1,81 +1,105 @@
-import { DEFAULT_KEY_BINDINGS } from '../config/gameConfig.js';
+// @ts-check
 
-const SETTINGS_KEY = 'rhythm-game:v1:settings';
-const RESULTS_KEY = 'rhythm-game:v1:best-results';
-const DIFFICULTIES = new Set(['easy', 'normal', 'hard', 'insane']);
+export const SETTINGS_KEY = 'web-osu:v2:settings';
+export const RESULTS_KEY = 'web-osu:v2:best-results';
 
 export const DEFAULT_SETTINGS = Object.freeze({
-  keyBindings: Object.freeze([...DEFAULT_KEY_BINDINGS]),
-  scrollSpeed: 1,
+  keyBindings: /** @type {[string,string]} */ (['KeyZ', 'KeyX']),
   offsetMs: 0,
   masterVolume: 1,
-  effectVolume: 0.8,
-  musicMuted: false,
-  effectsMuted: false,
-  lastDifficultyId: 'easy',
+  musicVolume: 1,
+  effectVolume: 1,
+  storyboardVolume: 1,
+  backgroundDim: 0.65,
+  cursorScale: 1,
+  cursorTrail: true,
+  storyboardEnabled: true,
+  hudDetailEnabled: true,
+  inputOverlayEnabled: true,
+  fpsEnabled: false,
+  lastSongId: 'megalovania',
+  lastBeatmapId: 848233,
 });
 
-function cloneDefaults() {
-  return { ...DEFAULT_SETTINGS, keyBindings: [...DEFAULT_SETTINGS.keyBindings] };
+/** @param {unknown} value @param {number} minimum @param {number} maximum @param {number} fallback */
+function numberInRange(value, minimum, maximum, fallback) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= minimum && value <= maximum ? value : fallback;
 }
 
-function validSettings(value) {
-  return value &&
-    Array.isArray(value.keyBindings) && value.keyBindings.length === 4 &&
-    value.keyBindings.every((code) => typeof code === 'string' && code.length > 0) &&
-    new Set(value.keyBindings).size === 4 &&
-    Number.isFinite(value.scrollSpeed) && value.scrollSpeed >= 0.5 && value.scrollSpeed <= 2 &&
-    Number.isFinite(value.offsetMs) && value.offsetMs >= -300 && value.offsetMs <= 300 &&
-    Number.isFinite(value.masterVolume) && value.masterVolume >= 0 && value.masterVolume <= 1 &&
-    Number.isFinite(value.effectVolume) && value.effectVolume >= 0 && value.effectVolume <= 1 &&
-    typeof value.musicMuted === 'boolean' && typeof value.effectsMuted === 'boolean' &&
-    DIFFICULTIES.has(value.lastDifficultyId);
-}
-
-function isBetter(next, current) {
-  if (!current) return true;
-  return next.score > current.score ||
-    (next.score === current.score && next.accuracy > current.accuracy) ||
-    (next.score === current.score && next.accuracy === current.accuracy && next.maxCombo > current.maxCombo);
-}
-
-export function createLocalRepository(storage = globalThis.localStorage) {
-  const memory = new Map();
-  const read = (key) => {
-    try { return storage?.getItem(key) ?? memory.get(key) ?? null; }
-    catch { return memory.get(key) ?? null; }
-  };
-  const write = (key, value) => {
-    memory.set(key, value);
-    try { storage?.setItem(key, value); } catch { /* memory fallback */ }
-  };
-
+/** @param {any} value */
+export function normalizeSettings(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const bindings = Array.isArray(source.keyBindings) && source.keyBindings.length === 2
+    && source.keyBindings.every((/** @type {any} */ key) => typeof key === 'string' && key.length > 0)
+    && source.keyBindings[0] !== source.keyBindings[1]
+    ? /** @type {[string,string]} */ ([source.keyBindings[0], source.keyBindings[1]]) : [...DEFAULT_SETTINGS.keyBindings];
   return {
-    loadSettings() {
-      try {
-        const value = JSON.parse(read(SETTINGS_KEY));
-        return validSettings(value) ? { ...value, keyBindings: [...value.keyBindings] } : cloneDefaults();
-      } catch {
-        return cloneDefaults();
-      }
-    },
-    saveSettings(settings) {
-      const normalized = validSettings(settings) ? settings : cloneDefaults();
-      write(SETTINGS_KEY, JSON.stringify(normalized));
-      return { ...normalized, keyBindings: [...normalized.keyBindings] };
-    },
-    getBestResult(difficultyId) {
-      try { return JSON.parse(read(RESULTS_KEY) ?? '{}')[difficultyId] ?? null; }
-      catch { return null; }
-    },
-    saveBestResult(result) {
-      let results;
-      try { results = JSON.parse(read(RESULTS_KEY) ?? '{}'); } catch { results = {}; }
-      if (!isBetter(result, results[result.difficultyId])) return false;
-      results[result.difficultyId] = result;
-      write(RESULTS_KEY, JSON.stringify(results));
-      return true;
-    },
+    keyBindings: bindings,
+    offsetMs: numberInRange(source.offsetMs, -200, 200, DEFAULT_SETTINGS.offsetMs),
+    masterVolume: numberInRange(source.masterVolume, 0, 1, DEFAULT_SETTINGS.masterVolume),
+    musicVolume: numberInRange(source.musicVolume, 0, 1, DEFAULT_SETTINGS.musicVolume),
+    effectVolume: numberInRange(source.effectVolume, 0, 1, DEFAULT_SETTINGS.effectVolume),
+    storyboardVolume: numberInRange(source.storyboardVolume, 0, 1, DEFAULT_SETTINGS.storyboardVolume),
+    backgroundDim: numberInRange(source.backgroundDim, 0, 1, DEFAULT_SETTINGS.backgroundDim),
+    cursorScale: numberInRange(source.cursorScale, 0.5, 2, DEFAULT_SETTINGS.cursorScale),
+    cursorTrail: typeof source.cursorTrail === 'boolean' ? source.cursorTrail : DEFAULT_SETTINGS.cursorTrail,
+    storyboardEnabled: typeof source.storyboardEnabled === 'boolean' ? source.storyboardEnabled : DEFAULT_SETTINGS.storyboardEnabled,
+    hudDetailEnabled: typeof source.hudDetailEnabled === 'boolean' ? source.hudDetailEnabled : DEFAULT_SETTINGS.hudDetailEnabled,
+    inputOverlayEnabled: typeof source.inputOverlayEnabled === 'boolean' ? source.inputOverlayEnabled : DEFAULT_SETTINGS.inputOverlayEnabled,
+    fpsEnabled: typeof source.fpsEnabled === 'boolean' ? source.fpsEnabled : DEFAULT_SETTINGS.fpsEnabled,
+    lastSongId: typeof source.lastSongId === 'string' ? source.lastSongId : DEFAULT_SETTINGS.lastSongId,
+    lastBeatmapId: Number.isInteger(source.lastBeatmapId) ? source.lastBeatmapId : DEFAULT_SETTINGS.lastBeatmapId,
   };
 }
 
+/** @param {any} candidate @param {any} current */
+export function isBetterResult(candidate, current) {
+  if (!current) return true;
+  if (candidate.score !== current.score) return candidate.score > current.score;
+  if (candidate.accuracy !== current.accuracy) return candidate.accuracy > current.accuracy;
+  if (candidate.maxCombo !== current.maxCombo) return candidate.maxCombo > current.maxCombo;
+  return String(candidate.playedAt) < String(current.playedAt);
+}
+
+export class LocalRepository {
+  /** @param {{getItem:(key:string)=>string|null,setItem:(key:string,value:string)=>void}} storage */
+  constructor(storage) { this.storage = storage; this.memory = new Map(); }
+
+  /** @param {string} key */
+  read(key) {
+    try { return this.storage.getItem(key) ?? this.memory.get(key) ?? null; }
+    catch { return this.memory.get(key) ?? null; }
+  }
+
+  /** @param {string} key @param {string} value */
+  write(key, value) {
+    this.memory.set(key, value);
+    try { this.storage.setItem(key, value); } catch { /* memory repository remains authoritative */ }
+  }
+
+  loadSettings() {
+    try { return normalizeSettings(JSON.parse(this.read(SETTINGS_KEY) ?? 'null')); }
+    catch { return normalizeSettings(null); }
+  }
+
+  /** @param {any} settings */
+  saveSettings(settings) { const normalized = normalizeSettings(settings); this.write(SETTINGS_KEY, JSON.stringify(normalized)); return normalized; }
+
+  /** @param {string} key */
+  getBestResult(key) {
+    try { return JSON.parse(this.read(RESULTS_KEY) ?? '{}')[key] ?? null; }
+    catch { return null; }
+  }
+
+  /** @param {string} key @param {any} result */
+  saveBestResult(key, result) {
+    /** @type {Record<string,any>} */
+    let results = {};
+    try { results = JSON.parse(this.read(RESULTS_KEY) ?? '{}'); } catch { /* replace corrupt storage */ }
+    const current = results[key] ?? null;
+    if (!isBetterResult(result, current)) return { updated: false, result: current };
+    results[key] = { ...result };
+    this.write(RESULTS_KEY, JSON.stringify(results));
+    return { updated: true, result: results[key] };
+  }
+}

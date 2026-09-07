@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-31",
+  "scope": "presentation stages 6-8 implementation run",
+  "browser": "Codex In-app Browser",
+  "checks": {
+    "referenceViewport1280x720": "pass",
+    "songSelectFiveDifficulties": "pass",
+    "difficultyExpandCollapse": "pass",
+    "keyboardDifficultySelection": "pass",
+    "previewFrom15984ms": "pass",
+    "previewToGameplay": "pass",
+    "failurePresentation": "pass",
+    "returnToSelectionRetainsDifficulty": "pass",
+    "responsive1366x768": "pass",
+    "responsive1024x768": "pass",
+    "consoleErrors": "none"
+  },
+  "releaseCandidateGates": {
+    "chromeSmoke": "not-run-unavailable",
+    "edgeSmoke": "not-run-unavailable",
+    "firefoxSmoke": "not-run-unavailable",
+    "vercelPreviewSmoke": "not-run-rights-gated"
+  },
+  "notes": [
+    "Expected YUGEN diagnostics and Vite development messages were informational only.",
+    "This file supplements rather than replaces the formal browser-smoke evidence contract."
+  ]
+}

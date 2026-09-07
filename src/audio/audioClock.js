@@ -1,62 +1,76 @@
+// @ts-check
+
+/**
+ * @typedef {{
+ *   currentTime: number,
+ *   getOutputTimestamp?: () => { contextTime: number, performanceTime: number },
+ * }} ClockAudioContext
+ */
+
 export class AudioClock {
-  #context;
-  #state = 'stopped';
-  #sourceStartedAt = 0;
-  #resumeOffsetMs = 0;
-  #userOffsetMs = 0;
-
-  constructor(context) {
-    this.#context = context;
+  /** @param {ClockAudioContext} audioContext @param {number} [offsetMs] */
+  constructor(audioContext, offsetMs = 0) {
+    this.audioContext = audioContext;
+    this.offsetMs = offsetMs;
+    this.startedAtSec = 0;
+    this.seekOffsetMs = 0;
+    this.running = false;
   }
 
-  get state() {
-    return this.#state;
+  /** @param {number} startedAtSec @param {number} seekOffsetMs */
+  start(startedAtSec, seekOffsetMs) {
+    this.startedAtSec = startedAtSec;
+    this.seekOffsetMs = seekOffsetMs;
+    this.running = true;
   }
 
-  get playbackOffsetMs() {
-    if (this.#state === 'running') {
-      return this.#resumeOffsetMs + (this.#context.currentTime - this.#sourceStartedAt) * 1000;
-    }
-    return this.#resumeOffsetMs;
-  }
-
-  get songTimeMs() {
-    return this.playbackOffsetMs + this.#userOffsetMs;
-  }
-
-  setUserOffsetMs(offsetMs) {
-    if (!Number.isFinite(offsetMs)) throw new TypeError('User offset must be a finite number');
-    this.#userOffsetMs = offsetMs;
-  }
-
-  start(offsetMs = 0) {
-    if (!Number.isFinite(offsetMs) || offsetMs < 0) {
-      throw new RangeError('Playback offset must be a non-negative finite number');
-    }
-    this.#resumeOffsetMs = offsetMs;
-    this.#sourceStartedAt = this.#context.currentTime;
-    this.#state = 'running';
-  }
-
+  /** @returns {number} */
   pause() {
-    if (this.#state === 'running') {
-      this.#resumeOffsetMs = this.playbackOffsetMs;
-      this.#state = 'paused';
+    this.seekOffsetMs = this.getRawAudioPositionMs();
+    this.running = false;
+    return this.seekOffsetMs;
+  }
+
+  /** @param {number} seekOffsetMs */
+  seek(seekOffsetMs) {
+    this.seekOffsetMs = Math.max(0, seekOffsetMs);
+    if (this.running) this.startedAtSec = this.audioContext.currentTime;
+  }
+
+  /** @param {number} offsetMs */
+  setOffset(offsetMs) {
+    this.offsetMs = offsetMs;
+  }
+
+  /** @returns {number} */
+  getRawAudioPositionMs() {
+    if (!this.running) return this.seekOffsetMs;
+    return this.seekOffsetMs + (this.audioContext.currentTime - this.startedAtSec) * 1000;
+  }
+
+  /** @returns {number} */
+  getMapTimeMs() {
+    return this.getRawAudioPositionMs() + this.offsetMs;
+  }
+
+  /**
+   * @param {number} eventTimestampMs
+   * @returns {{ mapTimeMs: number, fallback: boolean }}
+   */
+  eventTimestampToMapTime(eventTimestampMs) {
+    const timestamp = this.audioContext.getOutputTimestamp?.();
+    if (
+      !timestamp ||
+      !Number.isFinite(timestamp.contextTime) ||
+      !Number.isFinite(timestamp.performanceTime) ||
+      !Number.isFinite(eventTimestampMs) ||
+      !this.running
+    ) {
+      return { mapTimeMs: this.getMapTimeMs(), fallback: true };
     }
-    return this.#resumeOffsetMs;
-  }
 
-  resume() {
-    if (this.#state !== 'paused') throw new Error('Audio clock can only resume from paused state');
-    this.#sourceStartedAt = this.#context.currentTime;
-    this.#state = 'running';
-    return this.#resumeOffsetMs;
-  }
-
-  stop() {
-    this.#resumeOffsetMs = 0;
-    this.#sourceStartedAt = 0;
-    this.#state = 'stopped';
+    const eventContextTime = timestamp.contextTime + (eventTimestampMs - timestamp.performanceTime) / 1000;
+    const rawAudioPositionMs = this.seekOffsetMs + (eventContextTime - this.startedAtSec) * 1000;
+    return { mapTimeMs: rawAudioPositionMs + this.offsetMs, fallback: false };
   }
 }
-

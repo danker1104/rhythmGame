@@ -1,0 +1,16 @@
+{
+  "rulesetVersion": 4,
+  "beatmapId": 848234,
+  "mapSha256": "cde992c045299614b07bc8bc104844272521ee999d3c21a2f4790dcf3b03a8d6",
+  "overallDifficulty": 7.2,
+  "windows": { "hit300": 36.8, "hit100": 82.4, "hit50": 128 },
+  "cases": [
+    { "errorMs": 36.8, "expected": "300" },
+    { "errorMs": 36.801, "expected": "100" },
+    { "errorMs": 82.4, "expected": "100" },
+    { "errorMs": 82.401, "expected": "50" },
+    { "errorMs": 128, "expected": "50" },
+    { "errorMs": 128.001, "expected": null }
+  ],
+  "basis": "OD windows are inclusive: 80-6*OD, 140-8*OD, 200-10*OD"
+}

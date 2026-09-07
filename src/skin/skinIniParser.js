@@ -1,56 +1,139 @@
-function parseBlocks(source) {
-  const blocks = [];
-  let current = null;
+// @ts-check
 
-  for (const rawLine of source.replace(/^\uFEFF/, '').split(/\r?\n/)) {
+/** @type {Readonly<Record<string, readonly [string, string]>>} */
+const GENERAL_KEYS = Object.freeze({
+  Name: ['name', 'string'],
+  Author: ['author', 'string'],
+  Version: ['version', 'string'],
+  SliderBallFlip: ['sliderBallFlip', 'boolean'],
+  CursorRotate: ['cursorRotate', 'boolean'],
+  CursorTrailRotate: ['cursorTrailRotate', 'boolean'],
+  CursorExpand: ['cursorExpand', 'boolean'],
+  CursorCentre: ['cursorCentre', 'boolean'],
+  SliderBallFrames: ['sliderBallFrames', 'number'],
+  SpinnerFadePlayfield: ['spinnerFadePlayfield', 'boolean'],
+  ComboBurstRandom: ['comboBurstRandom', 'boolean'],
+  AllowSliderBallTint: ['allowSliderBallTint', 'boolean'],
+  LayeredHitSounds: ['layeredHitSounds', 'boolean'],
+  SliderStyle: ['sliderStyle', 'number'],
+});
+
+/** @type {Readonly<Record<string, readonly [string, string]>>} */
+const FONT_KEYS = Object.freeze({
+  HitCirclePrefix: ['hitCirclePrefix', 'string'],
+  HitCircleOverlap: ['hitCircleOverlap', 'number'],
+  ScorePrefix: ['scorePrefix', 'string'],
+  ScoreOverlap: ['scoreOverlap', 'number'],
+  ComboOverlap: ['comboOverlap', 'number'],
+});
+
+/** @param {string} value @param {string} type */
+function parseValue(value, type) {
+  if (type === 'string') return value.trim();
+  if (type === 'boolean') {
+    const number = Number(value);
+    return number === 0 || number === 1 ? Boolean(number) : null;
+  }
+  if (type === 'number') {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+  return null;
+}
+
+/** @param {string} value */
+function parseColour(value) {
+  const channels = value.split(',').map((channel) => Number(channel.trim()));
+  return channels.length === 3 && channels.every((channel) => Number.isInteger(channel) && channel >= 0 && channel <= 255)
+    ? channels
+    : null;
+}
+
+/**
+ * @param {string} source
+ * @returns {{
+ *   general: Record<string, any>,
+ *   colours: Record<string, any> & { comboColours: number[][] },
+ *   fonts: Record<string, any>,
+ *   warnings: string[],
+ * }}
+ */
+export function parseSkinIni(source) {
+  const warnings = [];
+  const normalized = source.replace(/^\uFEFF/, '');
+  if (!normalized.split(/\r?\n/).some((line) => line.trim() === '[General]')) {
+    throw new Error('SKIN_GENERAL_SECTION_MISSING');
+  }
+
+  /** @type {Record<string, unknown>} */
+  const general = {};
+  /** @type {Record<string, unknown>} */
+  const fonts = {};
+  /** @type {number[][]} */
+  const comboColours = [];
+  /** @type {Record<string, number[]>} */
+  const colours = {};
+  let section = '';
+
+  for (const rawLine of normalized.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line || line.startsWith('//')) continue;
-    const section = line.match(/^\[([^\]]+)]$/);
-    if (section) {
-      current = { name: section[1], values: new Map() };
-      blocks.push(current);
+    const sectionMatch = line.match(/^\[([^\]]+)]$/);
+    if (sectionMatch) {
+      section = sectionMatch[1];
       continue;
     }
-    if (!current) continue;
-    const separator = line.indexOf(':');
-    if (separator === -1) continue;
-    current.values.set(line.slice(0, separator).trim(), line.slice(separator + 1).trim());
+    const delimiter = line.indexOf(':');
+    if (delimiter < 0) continue;
+    const key = line.slice(0, delimiter).trim();
+    const value = line.slice(delimiter + 1).split('//', 1)[0].trim();
+
+    if (section === 'General') {
+      const definition = GENERAL_KEYS[key];
+      if (!definition) {
+        warnings.push(`SKIN_UNKNOWN_KEY:General.${key}`);
+        continue;
+      }
+      const parsed = parseValue(value, definition[1]);
+      if (parsed !== null && parsed !== '') general[definition[0]] = parsed;
+    } else if (section === 'Fonts') {
+      const definition = FONT_KEYS[key];
+      if (!definition) {
+        warnings.push(`SKIN_UNKNOWN_KEY:Fonts.${key}`);
+        continue;
+      }
+      const parsed = parseValue(value, definition[1]);
+      if (parsed !== null && parsed !== '') fonts[definition[0]] = parsed;
+    } else if (section === 'Colours') {
+      const parsed = parseColour(value);
+      if (!parsed) continue;
+      const comboMatch = key.match(/^Combo([1-8])$/);
+      if (comboMatch) comboColours[Number(comboMatch[1]) - 1] = parsed;
+      else colours[key] = parsed;
+    }
   }
-  return blocks;
-}
 
-function numberValue(values, key) {
-  const value = Number(values.get(key));
-  if (!Number.isFinite(value)) throw new Error(`Invalid 4Key Mania value: ${key}`);
-  return value;
-}
-
-function numberList(values, key, length) {
-  const result = (values.get(key) ?? '').split(',').map(Number);
-  if (result.length !== length || result.some((value) => !Number.isFinite(value))) {
-    throw new Error(`Invalid 4Key Mania value: ${key}`);
-  }
-  return result;
-}
-
-export function parseSkinIni4K(source) {
-  if (typeof source !== 'string') throw new TypeError('Skin.ini source must be a string');
-  const block = parseBlocks(source).find(({ name, values }) => name === 'Mania' && Number(values.get('Keys')) === 4);
-  if (!block) throw new Error('Skin.ini does not contain a 4Key Mania block');
-
-  const { values } = block;
   return {
-    keys: 4,
-    columnStart: numberValue(values, 'ColumnStart'),
-    hitPosition: numberValue(values, 'HitPosition'),
-    scorePosition: numberValue(values, 'ScorePosition'),
-    comboPosition: numberValue(values, 'ComboPosition'),
-    lightFramePerSecond: numberValue(values, 'LightFramePerSecond'),
-    columnWidths: numberList(values, 'ColumnWidth', 4),
-    columnLineWidths: numberList(values, 'ColumnLineWidth', 5),
-    columnColours: Array.from({ length: 4 }, (_, index) => numberList(values, `Colour${index + 1}`, 4)),
-    lightColours: Array.from({ length: 4 }, (_, index) => numberList(values, `ColourLight${index + 1}`, 4)),
-    holdColour: numberList(values, 'ColourHold', 4),
+    general: { layeredHitSounds: true, ...general },
+    colours: { ...colours, comboColours: comboColours.filter(Boolean) },
+    fonts,
+    warnings,
   };
 }
 
+/**
+ * @param {string[]} manifestPaths
+ * @param {number} declaredFrames
+ * @returns {string[]}
+ */
+export function resolveSliderBallAssets(manifestPaths, declaredFrames) {
+  const available = new Set(manifestPaths);
+  const frames = [];
+  for (let index = 0; index < declaredFrames; index += 1) {
+    const frame = `sliderb${index}.png`;
+    if (!available.has(frame)) break;
+    frames.push(frame);
+  }
+  if (frames.length > 0) return frames;
+  return available.has('sliderb.png') ? ['sliderb.png'] : [];
+}

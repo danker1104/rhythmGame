@@ -1,0 +1,26 @@
+{
+  "rulesetVersion": 4,
+  "mapSha256ByBeatmapId": {
+    "848233": "8d05c36d20af1aa60c35238f8af8b1346f2e67bdd098dbc16d4bfb264b5e2bbd",
+    "848235": "e88533e22534ac3ef5138e52993119cd3c520285a88a0fdbf38ab6548f47a76f",
+    "882805": "2c68691715120458fb5897addc8aecbfd02b82d3a56c4eef08430203c57c57db",
+    "848234": "cde992c045299614b07bc8bc104844272521ee999d3c21a2f4790dcf3b03a8d6",
+    "847387": "8257386ab32d264d4caf3cc406e1570b69f1e917d1e53e9cfad870a46da7cc3e"
+  },
+  "durationMs": 2000,
+  "requiredCases": [
+    { "beatmapId": 848233, "od": 2, "requiredSpins": 4 },
+    { "beatmapId": 848235, "od": 3, "requiredSpins": 4 },
+    { "beatmapId": 882805, "od": 5, "requiredSpins": 5 },
+    { "beatmapId": 848234, "od": 7.2, "requiredSpins": 6 },
+    { "beatmapId": 847387, "od": 8.2, "requiredSpins": 7 }
+  ],
+  "judgementCases": [
+    { "completedSpins": 7, "expected": "300", "bonusSpins": 0 },
+    { "completedSpins": 6, "expected": "100", "bonusSpins": 0 },
+    { "completedSpins": 2, "expected": "50", "bonusSpins": 0 },
+    { "completedSpins": 1, "expected": "miss", "bonusSpins": 0 },
+    { "completedSpins": 9, "expected": "300", "bonusSpins": 2 }
+  ],
+  "basis": "Required spins truncate duration*sps+0.5; 100 is one spin below, 50 is ceil(25%), bonus is above clear"
+}

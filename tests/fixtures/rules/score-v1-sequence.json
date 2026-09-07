@@ -1,0 +1,17 @@
+{
+  "rulesetVersion": 4,
+  "beatmapId": 848234,
+  "mapSha256": "cde992c045299614b07bc8bc104844272521ee999d3c21a2f4790dcf3b03a8d6",
+  "difficulty": { "hp": 5.2, "cs": 3.8, "od": 7.2, "objectCount": 386, "drainTimeSeconds": 126 },
+  "difficultyMultiplier": 4,
+  "events": [
+    { "hitValue": 300, "comboBeforeHit": 0, "addition": 300, "total": 300 },
+    { "hitValue": 300, "comboBeforeHit": 1, "addition": 300, "total": 600 },
+    { "hitValue": 300, "comboBeforeHit": 2, "addition": 348, "total": 948 },
+    { "hitValue": 300, "comboBeforeHit": 11, "addition": 780, "total": 1728 }
+  ],
+  "counts": { "300": 91, "100": 8, "50": 1, "miss": 0 },
+  "accuracy": 0.9383333333333334,
+  "rank": "S",
+  "basis": "Difficulty multiplier rounds once; each positive object addition floors once"
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "defaultSkinId": "yugen-v3",
+  "skins": [
+    {
+      "id": "yugen-v3",
+      "root": "skins/v3/yugen/",
+      "manifest": "manifest.json",
+      "config": "Skin.ini"
+    }
+  ],
+  "songs": [
+    {
+      "id": "megalovania-387700",
+      "title": "MEGALOVANIA",
+      "artist": "toby fox",
+      "creator": "Kyshiro",
+      "beatmapSetId": 387700,
+      "root": "content/v1/megalovania/",
+      "manifest": "manifest.json",
+      "audio": "toby fox - UNDERTALE Soundtrack - 100 MEGALOVANIA 192.mp3",
+      "background": "MUDCoPU.jpg",
+      "storyboard": "Toby Fox - MEGALOVANIA (Kyshiro).osb",
+      "previewTimeMs": 15984,
+      "difficulties": [
+        {
+          "id": "easy",
+          "label": "Easy",
+          "beatmapId": 848233,
+          "file": "toby fox - MEGALOVANIA (Kyshiro) [Easy].osu"
+        },
+        {
+          "id": "normal",
+          "label": "Normal",
+          "beatmapId": 848235,
+          "file": "toby fox - MEGALOVANIA (Kyshiro) [Normal].osu"
+        },
+        {
+          "id": "irres-light-hard",
+          "label": "Irre's Light Hard",
+          "beatmapId": 882805,
+          "file": "toby fox - MEGALOVANIA (Kyshiro) [Irre's Light Hard].osu"
+        },
+        {
+          "id": "hard",
+          "label": "Hard",
+          "beatmapId": 848234,
+          "file": "toby fox - MEGALOVANIA (Kyshiro) [Hard].osu"
+        },
+        {
+          "id": "insane",
+          "label": "Insane",
+          "beatmapId": 847387,
+          "file": "toby fox - MEGALOVANIA (Kyshiro) [Insane].osu"
+        }
+      ]
+    }
+  ]
+}

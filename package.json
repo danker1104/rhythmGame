@@ -1,16 +1,33 @@
 {
-  "name": "the-last-page-rhythm-game",
+  "name": "megalovania-web-rhythm-game",
+  "version": "0.0.0",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build": "npm run release:verify",
+    "build:bundle": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc --allowJs --checkJs --noEmit",
     "test": "vitest run",
-    "build": "vite build"
+    "prepare:content": "node scripts/prepare-content.mjs",
+    "validate:content": "node scripts/validate-content.mjs",
+    "validate:dist": "node scripts/validate-dist.mjs",
+    "validate:browser-evidence": "node scripts/validate-browser-evidence.mjs",
+    "release:verify": "npm run lint && npm run typecheck && npm run validate:content && npm run test && npm run build:bundle && npm run validate:dist",
+    "release:local": "npm run release:verify && npm run validate:browser-evidence && node scripts/create-local-rc.mjs"
+  },
+  "dependencies": {
+    "osu-classes": "3.1.0",
+    "osu-parsers": "4.1.7",
+    "osu-standard-stable": "5.0.1"
   },
   "devDependencies": {
-    "jsdom": "^30.0.1",
-    "vite": "^7.1.3",
-    "vitest": "^3.2.4"
+    "@eslint/js": "9.34.0",
+    "eslint": "9.34.0",
+    "typescript": "5.9.2",
+    "vite": "7.3.5",
+    "vitest": "3.2.6"
   }
 }

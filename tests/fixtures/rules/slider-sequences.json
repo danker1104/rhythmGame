@@ -1,0 +1,26 @@
+{
+  "rulesetVersion": 4,
+  "beatmapId": 848234,
+  "mapSha256": "cde992c045299614b07bc8bc104844272521ee999d3c21a2f4790dcf3b03a8d6",
+  "slider": {
+    "id": 1,
+    "kind": "slider",
+    "startTimeMs": 1000,
+    "endTimeMs": 2000,
+    "legacyTailTimeMs": 1964,
+    "radius": 32,
+    "pathPoints": [{ "x": 0, "y": 0 }, { "x": 100, "y": 0 }],
+    "spanCount": 2,
+    "nestedParts": [
+      { "id": "head", "kind": "head", "timeMs": 1000 },
+      { "id": "repeat-1", "kind": "repeat", "timeMs": 1500 },
+      { "id": "tail", "kind": "tail", "timeMs": 1964 }
+    ]
+  },
+  "cases": [
+    { "name": "all missed across a dropped frame", "holding": false, "cursor": { "x": 0, "y": 0 }, "parts": ["miss", "miss", "miss"], "final": "miss" },
+    { "name": "head and lenient tail acquired", "holding": true, "cursor": { "x": 0, "y": 0 }, "parts": ["hit", "miss", "hit"], "final": "100" },
+    { "name": "repeat only acquired", "holding": true, "cursor": { "x": 100, "y": 0 }, "parts": ["miss", "hit", "miss"], "final": "50" }
+  ],
+  "basis": "Follow radius is 2.4*32; tail is scheduled min(36ms, spanDuration/2) before visual end"
+}

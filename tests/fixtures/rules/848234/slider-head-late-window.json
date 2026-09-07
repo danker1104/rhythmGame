@@ -1,0 +1,39 @@
+{
+  "rulesetVersion": 4,
+  "beatmapId": 848234,
+  "sourceMapSha256": "cde992c045299614b07bc8bc104844272521ee999d3c21a2f4790dcf3b03a8d6",
+  "basis": "TRD 14.2: a Slider head can start anywhere inside the inclusive OD 7.2 hit50 window (128ms).",
+  "initialState": {
+    "previousTimeMs": 999,
+    "holding": false,
+    "cursor": { "x": 256, "y": 192 }
+  },
+  "slider": {
+    "id": 10,
+    "kind": "slider",
+    "startTimeMs": 1000,
+    "endTimeMs": 1500,
+    "radius": 37.376,
+    "spanCount": 1,
+    "pathPoints": [
+      { "x": 256, "y": 192 },
+      { "x": 356, "y": 192 }
+    ],
+    "nestedParts": [
+      { "id": "head", "kind": "head", "timeMs": 1000, "position": { "x": 256, "y": 192 } },
+      { "id": "tail", "kind": "tail", "timeMs": 1464, "position": { "x": 356, "y": 192 } }
+    ]
+  },
+  "inputTransitions": [
+    { "channel": "key-left", "phase": "press", "mapTimeMs": 1100, "playfieldPosition": { "x": 256, "y": 192 }, "synthetic": false }
+  ],
+  "expected": {
+    "type": "slider-part",
+    "objectId": 10,
+    "partId": "head",
+    "kind": "head",
+    "result": "hit",
+    "comboBreak": false,
+    "hitErrorMs": 100
+  }
+}

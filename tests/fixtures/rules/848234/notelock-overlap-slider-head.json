@@ -1,0 +1,38 @@
+{
+  "rulesetVersion": 4,
+  "beatmapId": 848234,
+  "sourceMapSha256": "cde992c045299614b07bc8bc104844272521ee999d3c21a2f4790dcf3b03a8d6",
+  "basis": "TRD 13.4: the earliest eligible unresolved object includes Slider heads and blocks propagation of the same press to a later object when the cursor misses the earlier radius.",
+  "hitWindows": { "hit300": 36.8, "hit100": 82.4, "hit50": 128 },
+  "objects": [
+    {
+      "id": 20,
+      "kind": "slider",
+      "startTimeMs": 1000,
+      "endTimeMs": 1400,
+      "radius": 37.376,
+      "spanCount": 1,
+      "position": { "x": 100, "y": 100 },
+      "pathPoints": [
+        { "x": 100, "y": 100 },
+        { "x": 200, "y": 100 }
+      ],
+      "nestedParts": [
+        { "id": "head", "kind": "head", "timeMs": 1000, "position": { "x": 100, "y": 100 } },
+        { "id": "tail", "kind": "tail", "timeMs": 1364, "position": { "x": 200, "y": 100 } }
+      ]
+    },
+    {
+      "id": 21,
+      "kind": "circle",
+      "startTimeMs": 1010,
+      "endTimeMs": 1010,
+      "radius": 37.376,
+      "position": { "x": 300, "y": 200 }
+    }
+  ],
+  "inputTransitions": [
+    { "channel": "mouse-left", "phase": "press", "mapTimeMs": 1010, "playfieldPosition": { "x": 300, "y": 200 }, "synthetic": false }
+  ],
+  "expected": { "event": null, "blockedByObjectId": 20 }
+}

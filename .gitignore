@@ -3,4 +3,6 @@ dist/
 .env
 .env.local
 *.pem
-
+coverage/
+.pnpm-store/
+.chrome-result-preview/

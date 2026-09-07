@@ -1,0 +1,32 @@
+{
+  "rulesetVersion": 4,
+  "beatmapId": 848234,
+  "sourceMapSha256": "cde992c045299614b07bc8bc104844272521ee999d3c21a2f4790dcf3b03a8d6",
+  "basis": "TRD 14.3 and 22.4: Spinner rotation consumes timestamped held pointer movement and must not depend on how many RAF callbacks occur.",
+  "spinner": {
+    "id": 30,
+    "kind": "spinner",
+    "startTimeMs": 1000,
+    "endTimeMs": 2000,
+    "requiredSpins": 1
+  },
+  "inputTransitions": [
+    { "phase": "press", "mapTimeMs": 1000, "playfieldPosition": { "x": 356, "y": 192 } },
+    { "phase": "move", "mapTimeMs": 1125, "playfieldPosition": { "x": 326.710678, "y": 262.710678 } },
+    { "phase": "move", "mapTimeMs": 1250, "playfieldPosition": { "x": 256, "y": 292 } },
+    { "phase": "move", "mapTimeMs": 1375, "playfieldPosition": { "x": 185.289322, "y": 262.710678 } },
+    { "phase": "move", "mapTimeMs": 1500, "playfieldPosition": { "x": 156, "y": 192 } },
+    { "phase": "move", "mapTimeMs": 1625, "playfieldPosition": { "x": 185.289322, "y": 121.289322 } },
+    { "phase": "move", "mapTimeMs": 1750, "playfieldPosition": { "x": 256, "y": 92 } },
+    { "phase": "move", "mapTimeMs": 1875, "playfieldPosition": { "x": 326.710678, "y": 121.289322 } },
+    { "phase": "move", "mapTimeMs": 2000, "playfieldPosition": { "x": 356, "y": 192 } }
+  ],
+  "expected": {
+    "type": "spinner-judged",
+    "objectId": 30,
+    "judgement": "300",
+    "completedSpins": 1,
+    "requiredSpins": 1,
+    "bonusSpins": 0
+  }
+}

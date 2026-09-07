@@ -1,94 +1,158 @@
-import { DEFAULT_KEY_BINDINGS } from '../config/gameConfig.js';
+// @ts-check
+
+import { InputState } from './inputState.js';
+
+const POINTER_CHANNELS = new Map([[0, 'mouse-left'], [2, 'mouse-right']]);
+
+/** @param {any} target */
+function isEditableTarget(target) {
+  const tagName = String(target?.tagName ?? '').toLocaleLowerCase('en-US');
+  return ['input', 'textarea', 'select', 'button'].includes(tagName) || Boolean(target?.isContentEditable) || Boolean(target?.closest?.('[role="dialog"]'));
+}
 
 export class InputManager {
-  #target;
-  #windowTarget;
-  #documentTarget;
-  #bindings;
-  #onPress;
-  #onRelease;
-  #onPause;
-  #active = false;
-  #pressedLanes = new Set();
-
-  constructor({
-    target = document,
-    windowTarget = window,
-    documentTarget = document,
-    keyBindings = DEFAULT_KEY_BINDINGS,
-    onPress = () => {},
-    onRelease = () => {},
-    onPause = () => {},
-  } = {}) {
-    this.#target = target;
-    this.#windowTarget = windowTarget;
-    this.#documentTarget = documentTarget;
-    this.#bindings = [...keyBindings];
-    this.#onPress = onPress;
-    this.#onRelease = onRelease;
-    this.#onPause = onPause;
+  /**
+   * @param {{
+   *   clock: {eventTimestampToMapTime:(timestamp:number)=>{mapTimeMs:number,fallback:boolean},getMapTimeMs:()=>number},
+   *   mapper: {screenToPlayfield:(point:{x:number,y:number})=>{x:number,y:number}},
+   *   requestPause: (reason:string)=>void,
+   *   keyBindings?: [string,string],
+   *   onMetric?: (name:'INPUT_TIMESTAMP_FALLBACK')=>void,
+   * }} options
+   */
+  constructor(options) {
+    this.clock = options.clock;
+    this.mapper = options.mapper;
+    this.requestPause = options.requestPause;
+    this.keyBindings = options.keyBindings ?? ['KeyZ', 'KeyX'];
+    this.onMetric = options.onMetric ?? (() => {});
+    this.state = new InputState();
+    this.active = false;
+    this.interrupted = false;
+    this.timestampFallbackCount = 0;
+    this.cursorScreenPosition = { x: 0, y: 0 };
+    this.pressCounts = { 'mouse-left': 0, 'mouse-right': 0, 'key-left': 0, 'key-right': 0 };
+    /** @type {Array<()=>void>} */
+    this.detachCallbacks = [];
   }
 
-  get pressedLanes() {
-    return new Set(this.#pressedLanes);
+  /** @param {boolean} active */
+  setActive(active) {
+    this.active = active;
+    if (active) this.interrupted = false;
   }
 
-  #keydown = (event) => {
-    if (!this.#active || event.repeat) return;
-    if (event.code === 'Escape') {
-      event.preventDefault();
-      this.#onPause();
-      return;
+  /** @param {[string,string]} keyBindings */
+  setKeyBindings(keyBindings) {
+    if (!keyBindings[0] || !keyBindings[1] || keyBindings[0] === keyBindings[1]) {
+      throw new Error('INPUT_BINDING_DUPLICATE');
     }
-    const lane = this.#bindings.indexOf(event.code);
-    if (lane === -1 || this.#pressedLanes.has(lane)) return;
-    event.preventDefault();
-    this.#pressedLanes.add(lane);
-    this.#onPress(lane);
-  };
+    this.keyBindings = /** @type {[string,string]} */ ([keyBindings[0], keyBindings[1]]);
+  }
 
-  #keyup = (event) => {
-    if (!this.#active) return;
-    const lane = this.#bindings.indexOf(event.code);
-    if (lane === -1 || !this.#pressedLanes.has(lane)) return;
-    event.preventDefault();
-    this.#pressedLanes.delete(lane);
-    this.#onRelease(lane);
-  };
+  /** @param {{x:number,y:number}} position */
+  setCursorScreenPosition(position) {
+    this.cursorScreenPosition = { ...position };
+  }
 
-  #visibilityChange = () => {
-    if (this.#documentTarget.hidden) {
-      this.clearPressed();
-      this.#onPause();
+  get playfieldPosition() {
+    return this.mapper.screenToPlayfield(this.cursorScreenPosition);
+  }
+
+  /** @param {any} event @param {{left:number,top:number}} [rect] */
+  handlePointerMove(event, rect = { left: 0, top: 0 }) {
+    this.setCursorScreenPosition({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    if (!this.active || !Number.isFinite(event.timeStamp)) return;
+    const time = this.mapEventTimestamp(event.timeStamp);
+    this.state.move(time.mapTimeMs, this.playfieldPosition);
+  }
+
+  /** @param {any} event */
+  handlePointerDown(event) {
+    if (!this.active) return;
+    const channel = POINTER_CHANNELS.get(event.button);
+    if (!channel) return;
+    event.preventDefault?.();
+    event.currentTarget?.setPointerCapture?.(event.pointerId);
+    this.press(/** @type {any} */ (channel), event.timeStamp);
+  }
+
+  /** @param {any} event */
+  handlePointerUp(event) {
+    const channel = POINTER_CHANNELS.get(event.button);
+    if (!channel) return;
+    this.release(/** @type {any} */ (channel), event.timeStamp);
+  }
+
+  /** @param {any} event */
+  handleKeyDown(event) {
+    if (!this.active || event.repeat || isEditableTarget(event.target)) return;
+    const index = this.keyBindings.indexOf(event.code);
+    if (index < 0) return;
+    event.preventDefault?.();
+    this.press(index === 0 ? 'key-left' : 'key-right', event.timeStamp);
+  }
+
+  /** @param {any} event */
+  handleKeyUp(event) {
+    const index = this.keyBindings.indexOf(event.code);
+    if (index < 0) return;
+    this.release(index === 0 ? 'key-left' : 'key-right', event.timeStamp);
+  }
+
+  /** @param {import('./inputState.js').InputChannel} channel @param {number} timestamp */
+  press(channel, timestamp) {
+    const time = this.mapEventTimestamp(timestamp);
+    const transition = this.state.press(channel, time.mapTimeMs, this.playfieldPosition);
+    if (transition) this.pressCounts[channel] += 1;
+  }
+
+  /** @param {import('./inputState.js').InputChannel} channel @param {number} timestamp */
+  release(channel, timestamp) {
+    const time = this.mapEventTimestamp(timestamp);
+    this.state.release(channel, time.mapTimeMs, this.playfieldPosition);
+  }
+
+  /** @param {number} timestamp */
+  mapEventTimestamp(timestamp) {
+    const time = this.clock.eventTimestampToMapTime(timestamp);
+    if (time.fallback) {
+      this.timestampFallbackCount += 1;
+      this.onMetric('INPUT_TIMESTAMP_FALLBACK');
     }
-  };
-
-  activate() {
-    if (this.#active) return;
-    this.#active = true;
-    this.#target.addEventListener('keydown', this.#keydown);
-    this.#target.addEventListener('keyup', this.#keyup);
-    this.#windowTarget.addEventListener('blur', this.#blur);
-    this.#documentTarget.addEventListener('visibilitychange', this.#visibilityChange);
+    return time;
   }
 
-  #blur = () => {
-    this.clearPressed();
-    this.#onPause();
-  };
-
-  clearPressed() {
-    for (const lane of this.#pressedLanes) this.#onRelease(lane);
-    this.#pressedLanes.clear();
+  /** @param {string} reason */
+  interrupt(reason) {
+    if (this.interrupted) return;
+    this.interrupted = true;
+    this.state.clear(this.clock.getMapTimeMs(), this.playfieldPosition);
+    if (this.active) this.requestPause(reason);
   }
 
-  destroy() {
-    if (!this.#active) return;
-    this.clearPressed();
-    this.#active = false;
-    this.#target.removeEventListener('keydown', this.#keydown);
-    this.#target.removeEventListener('keyup', this.#keyup);
-    this.#windowTarget.removeEventListener('blur', this.#blur);
-    this.#documentTarget.removeEventListener('visibilitychange', this.#visibilityChange);
+  /** @param {any} stage @param {any} windowObject @param {any} documentObject */
+  attach(stage, windowObject, documentObject) {
+    this.dispose();
+    /** @param {any} target @param {string} type @param {(event:any)=>void} handler @param {any} [options] */
+    const listen = (target, type, handler, options) => {
+      target.addEventListener(type, handler, options);
+      this.detachCallbacks.push(() => target.removeEventListener(type, handler, options));
+    };
+    listen(stage, 'pointermove', (/** @type {any} */ event) => this.handlePointerMove(event, stage.getBoundingClientRect()));
+    listen(stage, 'pointerdown', (/** @type {any} */ event) => this.handlePointerDown(event));
+    listen(stage, 'pointerup', (/** @type {any} */ event) => this.handlePointerUp(event));
+    listen(stage, 'pointercancel', () => this.interrupt('pointer-cancel'));
+    listen(stage, 'lostpointercapture', () => this.interrupt('pointer-capture-lost'));
+    listen(stage, 'contextmenu', (/** @type {any} */ event) => { if (this.active) event.preventDefault(); });
+    listen(windowObject, 'keydown', (/** @type {any} */ event) => this.handleKeyDown(event));
+    listen(windowObject, 'keyup', (/** @type {any} */ event) => this.handleKeyUp(event));
+    listen(windowObject, 'blur', () => this.interrupt('window-blur'));
+    listen(documentObject, 'visibilitychange', () => { if (documentObject.hidden) this.interrupt('visibility-hidden'); });
+    listen(documentObject, 'fullscreenchange', () => { if (this.active && !documentObject.fullscreenElement) this.interrupt('fullscreen-exit'); });
+  }
+
+  dispose() {
+    for (const detach of this.detachCallbacks.splice(0)) detach();
   }
 }

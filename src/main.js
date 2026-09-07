@@ -1,33 +1,43 @@
+// @ts-check
+
 import './styles.css';
-import { createApp } from './app/app.js';
-import { createAudioUnlock } from './audio/audioUnlock.js';
-import { createAudioSystem } from './audio/audioSystem.js';
-import { CONTENT } from './config/contentManifest.js';
-import { resolveContentUrl } from './config/resolveContentUrl.js';
-import { loadDifficultyResources } from './loader/resourceLoader.js';
-import { loadYugenSkin } from './skin/skinManager.js';
-import { createLocalRepository } from './storage/localRepository.js';
+import { CircleSliceApp } from './app/circleSliceApp.js';
+import { initializeApp } from './app/initializeApp.js';
+import { renderLayerProbe } from './renderer/renderLayerProbe.js';
 
-const app = document.querySelector('#app');
-const baseUrl = import.meta.env.BASE_URL;
+const canvas = document.querySelector('#gameplay');
 
-app.style.setProperty(
-  '--menu-background',
-  `url("${resolveContentUrl(CONTENT.skin.images.menuBackground, baseUrl)}")`,
-);
+if (!(canvas instanceof HTMLCanvasElement)) {
+  throw new Error('GAMEPLAY_CANVAS_MISSING');
+}
 
-const AudioContextClass = window.AudioContext ?? window.webkitAudioContext;
-const unlockAudio = createAudioUnlock(() => {
-  if (!AudioContextClass) throw new Error('이 브라우저는 Web Audio API를 지원하지 않습니다.');
-  return new AudioContextClass();
-});
-const repository = createLocalRepository();
+const context = canvas.getContext('2d');
 
-createApp(app, {
-  unlockAudio,
-  createAudioSystem,
-  loadResources: loadDifficultyResources,
-  loadSkin: loadYugenSkin,
-  baseUrl,
-  repository,
+if (!context) {
+  throw new Error('CANVAS_2D_UNAVAILABLE');
+}
+
+const select = document.querySelector('#difficulty-select');
+const startButton = document.querySelector('#start-button');
+const status = document.querySelector('#stage-status');
+const menuPanel = document.querySelector('#menu-panel');
+const stats = document.querySelector('#difficulty-stats');
+const dialog = document.querySelector('#flow-dialog');
+if (!(select instanceof HTMLSelectElement) || !(startButton instanceof HTMLButtonElement) || !(status instanceof HTMLElement)
+  || !(menuPanel instanceof HTMLElement) || !(stats instanceof HTMLElement) || !(dialog instanceof HTMLElement) || typeof /** @type {any} */ (dialog).showModal !== 'function') {
+  throw new Error('APP_CONTROLS_MISSING');
+}
+
+context.fillStyle = '#090713';
+context.fillRect(0, 0, canvas.width, canvas.height);
+
+const app = new CircleSliceApp({ canvas, select, startButton, status, menuPanel, stats, dialog: /** @type {HTMLDialogElement} */ (dialog) });
+void initializeApp(app, {
+  status,
+  startButton,
+  setRetry: (handler) => { startButton.onclick = handler ? () => { void handler(); } : null; },
+}).then((ready) => {
+  if (ready && new URL(window.location.href).searchParams.get('probe') === 'layers') {
+    renderLayerProbe(context, canvas.width, canvas.height);
+  }
 });

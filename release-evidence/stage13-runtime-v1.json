@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-26T21:42:50.0241462+09:00",
+  "environment": { "os": "Windows", "viewport": "1920x1080", "difficulty": "Insane", "beatmapId": 847387 },
+  "browsers": {
+    "chrome": { "version": "151.0.7922.174", "viewports": ["1920x1080", "1366x768", "1024x768"], "consoleErrors": 0 },
+    "edge": { "version": "151.0.4129.107", "viewports": ["1920x1080", "1366x768", "1024x768"], "consoleErrors": 0 },
+    "firefox": { "version": "153.0", "difficultyOptions": 5, "gameplayStarted": true, "mapClockAdvanced": true, "averageFpsAtStart": 60.63, "p95FrameMsAtStart": 16.7, "consoleErrors": 0 }
+  },
+  "performanceRuns": [
+    { "browser": "Chrome", "version": "151.0.7922.174", "run": 1, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 17.0, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Chrome", "version": "151.0.7922.174", "run": 2, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 17.0, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Chrome", "version": "151.0.7922.174", "run": 3, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 16.9, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Edge", "version": "151.0.4129.107", "run": 1, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 16.9, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Edge", "version": "151.0.4129.107", "run": 2, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 16.9, "over33Ratio": 0, "consoleErrors": 0 },
+    { "browser": "Edge", "version": "151.0.4129.107", "run": 3, "seconds": 120, "averageFps": 59.94, "p95FrameMs": 17.0, "over33Ratio": 0, "consoleErrors": 0 }
+  ],
+  "restart": { "count": 10, "musicSourceGenerations": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], "duplicateGeneration": false },
+  "input": { "mouseLeft": 1, "mouseRight": 1, "keyZ": 2, "keyX": 2, "multiChannelRegression": "pass" },
+  "responsive": { "viewports": ["1920x1080", "1366x768", "1024x768"], "menuInsideViewport": true, "canvasBackingMatchesEffectiveDpr": true },
+  "layerProbes": { "browser": "Chrome 151.0.7922.174", "foreground": [255, 0, 0, 255], "hitObject": [0, 255, 0, 255], "hud": [0, 0, 255, 255], "cursor": [255, 255, 255, 255] },
+  "staleLoad": { "delayedAudioCancelled": true, "selectionRestored": true, "consoleErrors": 0 }
+}
